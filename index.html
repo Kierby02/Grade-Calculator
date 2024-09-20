@@ -3,116 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grade Calculator</title>
-    <!-- Include PyScript -->
-    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
-    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css">
+    <title>Prelim Grade Calculator</title>
     <style>
         body {
-            font-family: 'Georgia', serif;
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f9f7; /* Light green background */
             display: flex;
-            flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0e7f0; /* Soft lavender background */
-            color: #3a3a3a; /* Dark gray text for contrast */
+            color: #333;
         }
-
-        input {
-            margin: 8px;
-            padding: 12px;
-            border: 2px solid #8e44ad; /* Deep purple border */
-            border-radius: 25px; /* More rounded corners */
-            width: 260px; /* Slightly wider */
-            background-color: #ffffff; /* White background for inputs */
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 320px;
+            text-align: center;
+        }
+        h1 {
+            margin-bottom: 20px;
+            color: #388e3c; /* Dark green color */
+            font-size: 24px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #666;
             font-size: 16px;
-            transition: border 0.3s ease;
         }
-
-        input:focus {
-            border-color: #5b2e91; /* Darker purple on focus */
-            outline: none; /* Remove default outline */
+        input[type="text"] {
+            width: calc(100% - 16px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
         }
-
+        input[type="text"]:focus {
+            border-color: #388e3c; /* Dark green on focus */
+            outline: none;
+        }
         button {
-            margin: 8px;
-            padding: 12px 24px;
+            width: 100%;
+            padding: 10px;
+            background-color: #388e3c; /* Dark green button */
+            color: #ffffff;
             border: none;
-            border-radius: 25px; /* Rounded corners */
-            background-color: #3498db; /* Bright blue color */
-            color: white;
-            font-size: 16px;
+            border-radius: 4px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
         }
-
         button:hover {
-            background-color: #2980b9; /* Darker blue on hover */
-            transform: scale(1.05); /* Slight grow effect */
+            background-color: #2e7d32; /* Slightly darker green on hover */
         }
-
-        p {
-            font-size: 20px;
+        #output {
+            margin-top: 20px;
+            font-size: 16px;
+            color: #333;
             font-weight: bold;
-            display: none; /* Hide result initially */
-            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
-            border: 2px solid #8e44ad; /* Match border color */
-            border-radius: 10px; /* Rounded corners */
-            padding: 15px;
-            margin-top: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
         }
     </style>
 </head>
 <body>
-    <input type="number" id="attendance" placeholder="Attendance" />
-    <input type="number" id="recitation" placeholder="Recitation" />
-    <input type="number" id="quiz" placeholder="Quiz" />
-    <input type="number" id="requirements" placeholder="Requirements" />
-    <input type="number" id="prelim_exam" placeholder="Prelim Exam" />
-    <button id="calculateButton">Calculate Grades</button>
-    <button id="populateButton">Generate Sample</button>
-    <p id="result"></p>
 
-    <!-- PyScript code -->
-    <py-script>
-        from pyscript import Element
+<div class="container">
+    <h1>Santos Grade Calculator</h1>
+    <form id="gradeForm" onsubmit="return false;">
+        <label for="prelim_grade">Enter your Prelim grade:</label>
+        <input type="text" id="prelim_grade" required>
+        <button id="submit">Calculate</button>
+    </form>
+    <div id="output"></div>
+</div>
 
-        def calculate_grades(event):
-            try:
-                attendance = float(Element("attendance").element.value) * 0.1
-                recitation = float(Element("recitation").element.value) * 0.4
-                quiz = float(Element("quiz").element.value) * 0.3
-                requirements = float(Element("requirements").element.value) * 0.3
-                prelim_exam = float(Element("prelim_exam").element.value) * 0.6
+<script src="https://pyscript.net/latest/pyscript.js"></script>
 
-                performance_task = recitation + quiz + requirements
-                overall_performance = performance_task * 0.3
+<py-script>
+def calculate_grades(prelim):
+    passing_grade = 75
+    max_midterm_final = 0.30 * 100 + 0.50 * 100
+    
+    if prelim >= passing_grade:
+        return "You have already passed the subject."
+    
+    required_overall_score = passing_grade - 0.20 * prelim
+    
+    if required_overall_score > max_midterm_final:
+        return "It is impossible to pass the subject with this Prelim grade."
+    
+    min_midterm_final = required_overall_score / 0.80
+    return f"Minimum Midterm and Final grades needed: {min_midterm_final:.2f}"
 
-                prelim_grade = round(attendance + overall_performance + prelim_exam, 2)
+def handle_submission():
+    output_element = Element('output')
+    prelim_grade_input = Element('prelim_grade').element.value  # Get input value
+    
+    try:
+        prelim_grade = float(prelim_grade_input)
+        if prelim_grade < 0 or prelim_grade > 100:
+            output_element.element.innerHTML = "Prelim grade must be between 0 and 100."
+        else:
+            result = calculate_grades(prelim_grade)
+            output_element.element.innerHTML = result
+    except ValueError:
+        output_element.element.innerHTML = "Please enter a valid number for Prelim grade."
 
-                Element("result").write(f"Your Prelim Grade is: {prelim_grade:.2f}")
-                Element("result").element.style.display = "block"
-            except ValueError:
-                Element("result").write("Invalid input. Please enter numbers only.")
-                Element("result").element.style.display = "block"
+# Attach the event listener to the button
+Element('submit').element.onclick = handle_submission
+</py-script>
 
-        def populate_inputs(event):
-            Element("attendance").element.value = 90
-            Element("recitation").element.value = 100
-            Element("quiz").element.value = 95
-            Element("requirements").element.value = 90
-            Element("prelim_exam").element.value = 80
-
-        def reset_inputs(event):
-            for element_id in ["attendance", "recitation", "quiz", "requirements", "prelim_exam"]:
-                Element(element_id).element.value = ''
-            Element("result").element.style.display = "none"
-
-        Element("calculateButton").element.onclick = calculate_grades
-        Element("populateButton").element.onclick = populate_inputs
-    </py-script>
 </body>
 </html>
