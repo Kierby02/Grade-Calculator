@@ -4,102 +4,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grade Calculator</title>
-    <!-- Include PyScript -->
+    
+    <!-- Include PyScript for Python support in the browser -->
     <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
     <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+    
     <style>
         body {
-            font-family: 'Georgia', serif;
+            font-family: 'Arial', sans-serif;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0e7f0; /* Soft lavender background */
-            color: #3a3a3a; /* Dark gray text for contrast */
+            background-color: #eae3f2; /* Light lavender background */
+            color: #444;
         }
+
+        .container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            width: 300px;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #6a1b9a; /* Deep purple */
+        }
+
         input {
-            margin: 8px;
-            padding: 12px;
-            border: 2px solid #8e44ad; /* Deep purple border */
-            border-radius: 25px; /* More rounded corners */
-            width: 260px; /* Slightly wider */
-            background-color: #ffffff; /* White background for inputs */
+            margin: 8px 0;
+            padding: 10px;
+            border: 2px solid #6a1b9a; /* Deep purple border */
+            border-radius: 6px;
+            width: calc(100% - 22px);
             font-size: 16px;
-            transition: border 0.3s ease;
+            transition: border-color 0.3s ease;
         }
+
         input:focus {
-            border-color: #5b2e91; /* Darker purple on focus */
-            outline: none; /* Remove default outline */
+            border-color: #4a148c; /* Darker purple on focus */
+            outline: none;
         }
+
         button {
-            margin: 8px;
-            padding: 12px 24px;
+            margin: 12px 0;
+            padding: 10px;
             border: none;
-            border-radius: 25px; /* Rounded corners */
-            background-color: #3498db; /* Bright blue color */
+            border-radius: 6px;
+            background-color: #6a1b9a; /* Deep purple background */
             color: white;
             font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease;
+            width: 100%;
         }
+
         button:hover {
-            background-color: #2980b9; /* Darker blue on hover */
-            transform: scale(1.05); /* Slight grow effect */
+            background-color: #4a148c; /* Darker purple on hover */
         }
+
         p {
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
-            display: none; /* Hide result initially */
-            background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
-            border: 2px solid #8e44ad; /* Match border color */
-            border-radius: 10px; /* Rounded corners */
-            padding: 15px;
-            margin-top: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+            background-color: #e1bee7; /* Light purple background for result */
+            color: #4a148c; /* Dark purple text */
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 20px;
+            display: none; /* Hidden by default */
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <input type="number" id="attendance" placeholder="Attendance" />
-    <input type="number" id="recitation" placeholder="Recitation" />
-    <input type="number" id="quiz" placeholder="Quiz" />
-    <input type="number" id="requirements" placeholder="Requirements" />
-    <input type="number" id="prelim_exam" placeholder="Prelim Exam" />
-    <button id="calculateButton">Calculate Grades</button>
-    <button id="populateButton">Generate Sample</button>
-    <p id="result"></p>
-    <!-- PyScript code -->
+    <div class="container">
+        <h1>Grade Calculator</h1>
+
+        <input type="number" id="absences" placeholder="Number of Absences" min="0" />
+        <input type="number" id="prelim_exam" placeholder="Prelim Exam Grade (0-100)" min="0" max="100" />
+        <input type="number" id="quizzes" placeholder="Quizzes Grade (0-100)" min="0" max="100" />
+        <input type="number" id="requirements" placeholder="Requirements Grade (0-100)" min="0" max="100" />
+        <input type="number" id="recitation" placeholder="Recitation Grade (0-100)" min="0" max="100" />
+
+        <button id="calculateButton">Calculate Grades</button>
+        <p id="result"></p>
+    </div>
+
     <py-script>
         from pyscript import Element
+
         def calculate_grades(event):
             try:
-                attendance = float(Element("attendance").element.value) * 0.1
-                recitation = float(Element("recitation").element.value) * 0.4
-                quiz = float(Element("quiz").element.value) * 0.3
-                requirements = float(Element("requirements").element.value) * 0.3
-                prelim_exam = float(Element("prelim_exam").element.value) * 0.6
-                performance_task = recitation + quiz + requirements
-                overall_performance = performance_task * 0.3
-                prelim_grade = round(attendance + overall_performance + prelim_exam, 2)
-                Element("result").write(f"Your Prelim Grade is: {prelim_grade:.2f}")
+                absences = int(Element("absences").element.value)
+                prelim_exam = float(Element("prelim_exam").element.value)
+                quizzes = float(Element("quizzes").element.value)
+                requirements = float(Element("requirements").element.value)
+                recitation = float(Element("recitation").element.value)
+
+                if absences >= 4:
+                    Element("result").write("FAILED: 4 or more absences.")
+                    Element("result").element.style.display = "block"
+                    return
+
+                attendance = max(0, 100 - absences * 10)
+                class_standing = (quizzes * 0.4) + (requirements * 0.3) + (recitation * 0.3)
+                prelim_grade = round((prelim_exam * 0.6) + (attendance * 0.1) + (class_standing * 0.3), 2)
+
+                target_passing = (75 - prelim_grade * 0.2) / 0.8
+                target_deans_list = (90 - prelim_grade * 0.2) / 0.8
+
+                Element("result").write(
+                    f"Prelim Grade: {prelim_grade}\n"
+                    f"To pass: {target_passing:.2f}\n"
+                    f"To achieve Dean's List: {target_deans_list:.2f}."
+                )
                 Element("result").element.style.display = "block"
-            except ValueError:
-                Element("result").write("Invalid input. Please enter numbers only.")
+
+            except ValueError as e:
+                Element("result").write("Please enter valid numbers.")
                 Element("result").element.style.display = "block"
-        def populate_inputs(event):
-            Element("attendance").element.value = 90
-            Element("recitation").element.value = 100
-            Element("quiz").element.value = 95
-            Element("requirements").element.value = 90
-            Element("prelim_exam").element.value = 80
-        def reset_inputs(event):
-            for element_id in ["attendance", "recitation", "quiz", "requirements", "prelim_exam"]:
-                Element(element_id).element.value = ''
-            Element("result").element.style.display = "none"
+
         Element("calculateButton").element.onclick = calculate_grades
-        Element("populateButton").element.onclick = populate_inputs
     </py-script>
 </body>
 </html>
